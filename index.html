@@ -484,7 +484,7 @@ body{background:var(--cream);color:var(--text-dark);font-family:'Jost',sans-seri
       <div class="info-icon">🤳</div>
       <div class="info-title">Video Wishes</div>
       <div class="info-text">Tap to send us a video message<br><strong style="color:var(--rose-deep)">directly via WhatsApp.</strong></div>
-      <a href="https://wa.me/+923172183638" target="_blank" style="position:absolute; inset:0; z-index:1;"></a>
+      <a href="https://wa.me/03172183638" target="_blank" style="position:absolute; inset:0; z-index:1;"></a>
     </div>
     <div class="info-card">
       <div class="info-icon">🌸</div>
@@ -559,7 +559,7 @@ body{background:var(--cream);color:var(--text-dark);font-family:'Jost',sans-seri
   </div>
   <span class="music-label" id="musicLabel">Tap to play</span>
 </button>
-<div id="ytPlayer" style="position:fixed;width:1px;height:1px;top:-9999px;left:-9999px;pointer-events:none"></div>
+<audio id="bgAudio" src="song.mp3" loop preload="auto"></audio>
 
 <script>
 // ── CURSOR ──
@@ -656,65 +656,28 @@ const revObs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isInters
 document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el=>revObs.observe(el));
 
 // ── MUSIC ──
-let musicPlaying=false, playerReady=false, autoplayAttempted=false;
-const btn=document.getElementById('musicBtn');
-const icon=document.getElementById('musicIcon');
-const mlabel=document.getElementById('musicLabel');
-const mbars=document.querySelectorAll('.music-bar');
-const tag=document.createElement('script');
-tag.src='https://www.youtube.com/iframe_api';
-document.head.appendChild(tag);
-let player;
-window.onYouTubeIframeAPIReady = function() {
-  player = new YT.Player('ytPlayer', {
-    videoId: '8F_pL4Nn0To', // Using the Instrumental ID
-    playerVars: {
-      'autoplay': 1,
-      'loop': 1,
-      'playlist': '8F_pL4Nn0To', // Required for looping
-      'controls': 0,
-      'rel': 0,
-      'showinfo': 0,
-      'mute': 1, // Start muted to allow autoplay
-      'playsinline': 1
-    },
-    events: {
-      'onReady': function(e) {
-        playerReady = true;
-        e.target.setVolume(55);
-        e.target.playVideo();
-      },
-      'onStateChange': function(e) {
-        if (e.data === YT.PlayerState.PLAYING) setPlaying(true);
-        if (e.data === YT.PlayerState.PAUSED) setPlaying(false);
-      }
-    }
-  });
-};
-function setPlaying(s){
-  musicPlaying=s;
-  mlabel.textContent=s?'Now Playing':'Tap to play';
-  btn.classList.toggle('playing',s);
-  mbars.forEach(b=>b.style.animationPlayState=s?'running':'paused');
+let musicPlaying = false;
+const btn = document.getElementById('musicBtn');
+const mlabel = document.getElementById('musicLabel');
+const mbars = document.querySelectorAll('.music-bar');
+const audio = document.getElementById('bgAudio');
+
+audio.volume = 0.7;
+
+function setPlaying(s) {
+  musicPlaying = s;
+  mlabel.textContent = s ? 'Now Playing' : 'Tap to play';
+  btn.classList.toggle('playing', s);
+  mbars.forEach(b => b.style.animationPlayState = s ? 'running' : 'paused');
 }
-// Force unmute on first user interaction (bypasses browser autoplay restrictions)
-function unlockAudio(){
-  if(playerReady && !musicPlaying){
-    try{player.unMute();player.playVideo();setPlaying(true);}catch(err){}
+
+btn.addEventListener('click', () => {
+  if (musicPlaying) {
+    audio.pause();
+    setPlaying(false);
+  } else {
+    audio.play().then(() => setPlaying(true)).catch(() => {});
   }
-  document.removeEventListener('click',unlockAudio);
-  document.removeEventListener('touchstart',unlockAudio);
-  document.removeEventListener('keydown',unlockAudio);
-  document.removeEventListener('scroll',unlockAudio);
-}
-document.addEventListener('click',unlockAudio,{once:true});
-document.addEventListener('touchstart',unlockAudio,{once:true});
-document.addEventListener('keydown',unlockAudio,{once:true});
-document.addEventListener('scroll',unlockAudio,{once:true});
-btn.addEventListener('click',()=>{
-  if(!playerReady)return;
-  if(musicPlaying){player.pauseVideo();}
-  else{player.unMute();player.playVideo();}
 });
 </script>
 </body>
